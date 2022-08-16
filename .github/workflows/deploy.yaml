@@ -1,0 +1,39 @@
+name: Deploy MultiDocker
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - run: docker build -t fusixaf/react-test -f ./client/Dockerfile.dev ./client
+      - run: docker run -e CI=true fusixaf/react-test npm test
+
+      - run: docker build -t fusixaf/multi-client-10-14 ./client
+      - run: docker build -t fusixaf/multi-nginx-10-14 ./nginx
+      - run: docker build -t fusixaf/multi-server-10-14 ./server
+      - run: docker build -t fusixaf/multi-worker-10-14 ./worker
+
+      - run: docker push fusixaf/multi-client-10-14
+      - run: docker push fusixaf/multi-nginx-10-14
+      - run: docker push fusixaf/multi-server-10-14
+      - run: docker push fusixaf/multi-worker-10-14
+
+      # - name: Generate deployment package
+      #   run: zip -r deploy.zip . -x '*.git*'
+
+      # - name: Deploy to AWS' Elastic Beanstalk
+      #   uses: einaregilsson/beanstalk-deploy@v18
+      #   with:
+      #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+      #     aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+      #     application_name: CHANGE
+      #     environment_name: CHANGE
+      #     existing_bucket_name: CHANGE
+      #     region: eu-central-1
+      #     version_label: ${{ github.sha }}
+      #     deployment_package: deploy.zip

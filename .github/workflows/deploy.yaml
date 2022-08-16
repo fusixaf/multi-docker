@@ -2,8 +2,12 @@ name: Deploy MultiDocker
 on:
   push:
     branches:
+<<<<<<< HEAD
       - main
 
+=======
+      - master
+>>>>>>> 014a474 (Adding Github workflow)
 jobs:
   build:
     runs-on: ubuntu-latest
